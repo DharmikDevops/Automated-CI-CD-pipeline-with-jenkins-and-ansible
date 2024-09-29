@@ -1,3 +1,5 @@
+#Create this script under "jenkins-agent" user
+
 #!/bin/bash
 
 # Define the directory to be backed up
