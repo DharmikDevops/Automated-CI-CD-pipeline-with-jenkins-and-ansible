@@ -1,0 +1,28 @@
+#Create this yaml file under "jenkins-agent" user
+
+
+---
+
+- name: Backup the exixting war file, and deploy the new war file..
+  hosts: web
+  become: true
+  become_user: root
+  gather_facts: false
+  tasks:
+    - name: Run the script (with exit code capture)
+      shell: /home/jenkins-agent/backupscript.sh
+
+    - name: Stop tomcat server
+      become: true
+      command: sh /opt/tomcat/bin/shutdown.sh
+
+    - name: deploy artifact in webapp
+      shell: |
+        rm -rf /opt/tomcat/webapps/hello-world-0.0.1-SNAPSHOT.war*
+        cd  /home/jenkins-agent/workspace/Pipeline/target/
+        cp *.war /opt/tomcat/webapps/
+        sleep 1
+
+    - name: start Tomcat
+      become: true
+      command: sh /opt/tomcat/bin/startup.sh
