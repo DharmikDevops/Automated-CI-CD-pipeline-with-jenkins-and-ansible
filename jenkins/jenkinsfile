@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+    tools {
+        // Specify Maven and JDK if needed
+        maven 'maven-3.9.9' 
+        jdk 'java-17'
+    }
+    environment {
+        SONAR_TOKEN = credentials('sonarcloud-token')  // Use the token you added in Jenkins credentials
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Clone the repository from GitHub
+                git branch: 'main', url: 'https://github.com/DharmikDevops/sample-war.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                // Build the project using Maven
+                sh 'mvn clean install'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run tests using Maven
+                sh 'mvn test'
+            }
+        }
+        stage('SonarQube analysis') {
+            steps {
+                // Run SonarCloud analysis
+                sh '''
+                mvn sonar:sonar \
+                -Dsonar.organization=your-organization \
+                -Dsonar.projectKey=your-project-key \
+                -Dsonar.host.url=https://sonarcloud.io \
+                -Dsonar.login=$SONAR_TOKEN
+                '''
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // Run Ansible playbook to deploy the application
+                // Inventory file and playbook are in /home/jenkins-agent
+                sh '''
+                ansible-playbook -i /home/jenkins-agent/invent.ini /home/jenkins-agent/deploy.yaml
+                '''
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
