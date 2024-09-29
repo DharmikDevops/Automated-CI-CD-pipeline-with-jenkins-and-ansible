@@ -1,4 +1,4 @@
-# Create this sbash script under the root user
+# Create this bash script under the root user
 
 
 #!/bin/bash
